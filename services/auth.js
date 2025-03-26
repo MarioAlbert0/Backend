@@ -11,7 +11,23 @@ const register = async (req, res) => {
         .json({ error: "Todos los campos son obligatorios." });
     }
 
-    UserModel.create({ name, email, password });
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(toString(password), salt);
+
+    const token = isJWT.sing(
+      {email,name},
+      process.env.SECRET,
+      { expiresIn: "1h" }
+    );
+
+    await UserModel.create({
+      name,
+      email,
+      password: hash,
+      token,
+      });
+
+    UserModel.create({ name, email, password: hash9});
 
     return res.json({
       mensaje: "Registered user",
